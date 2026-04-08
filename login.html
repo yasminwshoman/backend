@@ -5,49 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Login</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       background: linear-gradient(135deg, #0f172a, #0ea5e9);
+      padding: 20px;
     }
+
     .login-box {
+      width: 100%;
+      max-width: 380px;
       background: white;
       padding: 30px;
       border-radius: 20px;
-      width: 320px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.22);
     }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #0f172a;
+      margin-bottom: 24px;
+    }
+
     input, button {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 10px;
+      padding: 13px;
+      margin-bottom: 14px;
+      border-radius: 12px;
       font-size: 14px;
     }
+
+    input {
+      border: 1px solid #cbd5e1;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #0ea5e9;
+    }
+
     button {
       border: none;
       background: #0f172a;
       color: white;
       cursor: pointer;
+      font-weight: bold;
     }
+
+    button:hover {
+      background: #1e293b;
+    }
+
     .error {
-      color: red;
+      color: #dc2626;
       display: none;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       font-size: 13px;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
   <div class="login-box">
     <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="Username">
+
+    <input type="text" id="username" placeholder="Username or Email">
     <input type="password" id="password" placeholder="Password">
+
     <div class="error" id="errorMsg"></div>
+
     <button onclick="login()">Login</button>
+
+    <div class="note">Default login: admin / 1234</div>
   </div>
 
   <script>
@@ -59,9 +101,16 @@
       errorMsg.style.display = "none";
       errorMsg.textContent = "";
 
+      if (!user || !pass) {
+        errorMsg.textContent = "Please enter username/email and password";
+        errorMsg.style.display = "block";
+        return;
+      }
+
       try {
         const response = await fetch("http://localhost:3000/api/login", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: user,
@@ -72,7 +121,6 @@
         const data = await response.json();
 
         if (response.ok) {
-          localStorage.setItem("isLoggedIn", "true");
           window.location.href = "dashboard.html";
         } else {
           errorMsg.textContent = data.message || "Login failed";
