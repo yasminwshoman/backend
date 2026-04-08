@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f172a, #0ea5e9);
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 320px;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    button {
+      border: none;
+      background: #0f172a;
+      color: white;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      display: none;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <div class="error" id="errorMsg"></div>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <script>
+    async function login() {
+      const user = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+
+      errorMsg.style.display = "none";
+      errorMsg.textContent = "";
+
+      try {
+        const response = await fetch("http://localhost:3000/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: user,
+            password: pass
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem("isLoggedIn", "true");
+          window.location.href = "dashboard.html";
+        } else {
+          errorMsg.textContent = data.message || "Login failed";
+          errorMsg.style.display = "block";
+        }
+      } catch (error) {
+        errorMsg.textContent = "Cannot connect to server";
+        errorMsg.style.display = "block";
+      }
+    }
+  </script>
+</body>
+</html>

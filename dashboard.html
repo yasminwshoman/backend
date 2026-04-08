@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f4f6;
+    }
+    .header {
+      background: #0f172a;
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .save-btn {
+      background: #0f172a;
+      color: white;
+    }
+    .logout-btn {
+      background: #ef4444;
+      color: white;
+    }
+    .delete-btn {
+      background: #ef4444;
+      color: white;
+    }
+    .message {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      display: none;
+    }
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>Dashboard</h2>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h3>Add Partition</h3>
+      <input type="text" id="title" placeholder="Partition Title">
+      <input type="file" id="csvFile" accept=".csv">
+      <button class="save-btn" id="saveBtn">Save Partition</button>
+
+      <div id="successMsg" class="message success"></div>
+      <div id="errorMsg" class="message error"></div>
+    </div>
+
+    <div class="card">
+      <h3>Partitions Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>CSV File</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    console.log("dashboard loaded");
+
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.href = "login.html";
+    }
+
+    let partitions = [];
+
+    function logout() {
+      localStorage.removeItem("isLoggedIn");
+      window.location.href = "login.html";
+    }
+
+    function showSuccess(message) {
+      const successMsg = document.getElementById("successMsg");
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.style.display = "none";
+      successMsg.textContent = message;
+      successMsg.style.display = "block";
+    }
+
+    function showError(message) {
+      const successMsg = document.getElementById("successMsg");
+      const errorMsg = document.getElementById("errorMsg");
+      successMsg.style.display = "none";
+      errorMsg.textContent = message;
+      errorMsg.style.display = "block";
+    }
+
+    async function loadPartitions() {
+      try {
+        console.log("loading partitions...");
+        const res = await fetch("http://localhost:3000/api/partitions");
+        const data = await res.json();
+        partitions = data;
+        renderTable();
+      } catch (error) {
+        console.error("LOAD ERROR:", error);
+        showError("Cannot load partitions from server");
+      }
+    }
+
+    async function savePartition() {
+      console.log("savePartition started");
+
+      const title = document.getElementById("title").value.trim();
+      const fileInput = document.getElementById("csvFile");
+      const file = fileInput.files[0];
+
+      console.log("title =", title);
+      console.log("file =", file);
+
+      if (title === "") {
+        showError("Partition title is required.");
+        return;
+      }
+
+      if (!file) {
+        showError("Please upload a CSV file.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("csvFile", file);
+
+      try {
+        console.log("sending POST request...");
+        const res = await fetch("http://localhost:3000/api/partitions", {
+          method: "POST",
+          body: formData
+        });
+
+        console.log("response received", res.status);
+
+        const data = await res.json();
+        console.log("server data =", data);
+
+        if (!res.ok) {
+          showError(data.message || "Failed to add partition.");
+          return;
+        }
+
+        document.getElementById("title").value = "";
+        fileInput.value = "";
+        showSuccess(data.message || "Partition added successfully.");
+        loadPartitions();
+      } catch (error) {
+        console.error("SAVE ERROR:", error);
+        showError("Cannot connect to server.");
+      }
+    }
+
+    async function deletePartition(id) {
+      try {
+        const res = await fetch(`http://localhost:3000/api/partitions/${id}`, {
+          method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.message || "Failed to delete partition.");
+          return;
+        }
+
+        showSuccess(data.message || "Deleted successfully.");
+        loadPartitions();
+      } catch (error) {
+        console.error("DELETE ERROR:", error);
+        showError("Cannot connect to server.");
+      }
+    }
+
+    function renderTable() {
+      const tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "";
+
+      for (let i = 0; i < partitions.length; i++) {
+        tableBody.innerHTML += `
+          <tr>
+            <td>${partitions[i].id}</td>
+            <td>${partitions[i].title}</td>
+            <td>${partitions[i].fileName}</td>
+            <td>
+              <button class="delete-btn" onclick="deletePartition(${partitions[i].id})">Delete</button>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", savePartition);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    loadPartitions();
+  </script>
+</body>
+</html>
