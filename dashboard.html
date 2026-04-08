@@ -2,256 +2,756 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f3f4f6;
+      background: #f1f5f9;
+      color: #0f172a;
     }
-    .header {
+
+    .navbar {
       background: #0f172a;
       color: white;
-      padding: 15px 25px;
+      padding: 16px 22px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
+
+    .navbar h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+    }
+
+    .logout-btn { background: #ef4444; }
+    .password-btn { background: #2563eb; }
+
     .container {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 0 20px;
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px 30px;
     }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
     .card {
       background: white;
       border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 20px;
+      padding: 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
     }
-    input {
+
+    .stat-card h4 {
+      margin: 0 0 10px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .stat-card p {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+      word-break: break-word;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    input, select, button {
       width: 100%;
       padding: 12px;
       margin-bottom: 12px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+      border-radius: 12px;
+      font-size: 14px;
     }
+
+    input, select {
+      border: 1px solid #cbd5e1;
+      outline: none;
+      background: white;
+    }
+
     button {
-      padding: 10px 14px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .save-btn {
       background: #0f172a;
       color: white;
+      cursor: pointer;
+      font-weight: bold;
     }
-    .logout-btn {
-      background: #ef4444;
-      color: white;
+
+    button:hover {
+      background: #1e293b;
     }
-    .delete-btn {
-      background: #ef4444;
-      color: white;
-    }
+
     .message {
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 10px;
       display: none;
+      margin-bottom: 12px;
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
     }
+
     .success {
       background: #dcfce7;
       color: #166534;
     }
+
     .error {
       background: #fee2e2;
       color: #991b1b;
     }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .partition-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .partition-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .partition-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .partition-meta {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .actions button, .actions a {
+      width: auto;
+      margin: 0;
+      padding: 9px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .edit-btn { background: #2563eb; }
+    .preview-btn { background: #059669; }
+    .download-btn { background: #7c3aed; }
+    .delete-btn { background: #dc2626; }
+
+    .logs-list {
+      max-height: 420px;
+      overflow: auto;
+    }
+
+    .log-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 14px;
+    }
+
+    .log-item:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #64748b;
+      padding: 16px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 999;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 900px;
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      max-height: 85vh;
+      overflow: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .close-btn {
+      width: auto;
+      margin: 0;
+      background: #ef4444;
+      padding: 8px 12px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      overflow-x: auto;
     }
+
     th, td {
-      border-bottom: 1px solid #e5e7eb;
-      padding: 12px;
+      border: 1px solid #cbd5e1;
+      padding: 10px;
       text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: #e2e8f0;
+    }
+
+    @media (max-width: 992px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .partition-top {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-
-  <div class="header">
-    <h2>Dashboard</h2>
-    <button class="logout-btn" id="logoutBtn">Logout</button>
+  <div class="navbar">
+    <h2>Back-End Dashboard</h2>
+    <div class="nav-buttons">
+      <button class="nav-btn password-btn" onclick="openPasswordModal()">Change Password</button>
+      <button class="nav-btn logout-btn" onclick="logout()">Logout</button>
+    </div>
   </div>
 
   <div class="container">
-    <div class="card">
-      <h3>Add Partition</h3>
-      <input type="text" id="title" placeholder="Partition Title">
-      <input type="file" id="csvFile" accept=".csv">
-      <button class="save-btn" id="saveBtn">Save Partition</button>
-
-      <div id="successMsg" class="message success"></div>
-      <div id="errorMsg" class="message error"></div>
+    <div class="stats-grid">
+      <div class="card stat-card">
+        <h4>Total Partitions</h4>
+        <p id="totalPartitions">0</p>
+      </div>
+      <div class="card stat-card">
+        <h4>Total CSV Files</h4>
+        <p id="totalCsvFiles">0</p>
+      </div>
+      <div class="card stat-card">
+        <h4>Last Added Partition</h4>
+        <p id="lastAddedPartition">N/A</p>
+      </div>
+      <div class="card stat-card">
+        <h4>Last Updated Partition</h4>
+        <p id="lastUpdatedPartition">N/A</p>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Partitions Table</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>CSV File</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
+    <div class="layout">
+      <div>
+        <div class="card">
+          <h3 id="formTitle">Add Partition</h3>
+
+          <input type="hidden" id="editId">
+          <input type="text" id="title" placeholder="Partition Title">
+          <input type="file" id="csvFile" accept=".csv">
+
+          <div class="message success" id="successMsg"></div>
+          <div class="message error" id="errorMsg"></div>
+
+          <button onclick="savePartition()" id="saveBtn">Save Partition</button>
+          <button onclick="resetForm()" id="cancelEditBtn" style="display:none; background:#64748b;">Cancel Edit</button>
+        </div>
+
+        <div class="card">
+          <h3>Partitions List</h3>
+
+          <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="Search by title" oninput="loadPartitions()">
+            <select id="sortSelect" onchange="loadPartitions()">
+              <option value="">Sort By</option>
+              <option value="title">Title</option>
+              <option value="createdAt">Creation Date</option>
+              <option value="updatedAt">Last Updated Date</option>
+            </select>
+            <button onclick="loadPartitions()">Refresh</button>
+          </div>
+
+          <div id="partitionsList"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h3>Activity Log</h3>
+          <div class="logs-list" id="logsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="margin:0;">CSV Preview</h3>
+        <button class="close-btn" onclick="closePreviewModal()">Close</button>
+      </div>
+      <div id="previewContent"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="passwordModal">
+    <div class="modal-content" style="max-width:500px;">
+      <div class="modal-header">
+        <h3 style="margin:0;">Change Password</h3>
+        <button class="close-btn" onclick="closePasswordModal()">Close</button>
+      </div>
+      <input type="password" id="currentPassword" placeholder="Current Password">
+      <input type="password" id="newPassword" placeholder="New Password">
+      <div class="message success" id="passwordSuccessMsg"></div>
+      <div class="message error" id="passwordErrorMsg"></div>
+      <button onclick="changePassword()">Update Password</button>
     </div>
   </div>
 
   <script>
-    console.log("dashboard loaded");
+    async function checkSession() {
+      try {
+        const response = await fetch("http://localhost:3000/api/session", {
+          credentials: "include"
+        });
+        const data = await response.json();
 
-    if (localStorage.getItem("isLoggedIn") !== "true") {
-      window.location.href = "login.html";
+        if (!data.isLoggedIn) {
+          window.location.href = "login.html";
+        }
+      } catch (error) {
+        window.location.href = "login.html";
+      }
     }
 
-    let partitions = [];
-
-    function logout() {
-      localStorage.removeItem("isLoggedIn");
-      window.location.href = "login.html";
-    }
-
-    function showSuccess(message) {
+    function showMessage(type, text) {
       const successMsg = document.getElementById("successMsg");
       const errorMsg = document.getElementById("errorMsg");
-      errorMsg.style.display = "none";
-      successMsg.textContent = message;
-      successMsg.style.display = "block";
-    }
 
-    function showError(message) {
-      const successMsg = document.getElementById("successMsg");
-      const errorMsg = document.getElementById("errorMsg");
       successMsg.style.display = "none";
-      errorMsg.textContent = message;
-      errorMsg.style.display = "block";
+      errorMsg.style.display = "none";
+      successMsg.textContent = "";
+      errorMsg.textContent = "";
+
+      if (type === "success") {
+        successMsg.textContent = text;
+        successMsg.style.display = "block";
+      } else {
+        errorMsg.textContent = text;
+        errorMsg.style.display = "block";
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("editId").value = "";
+      document.getElementById("title").value = "";
+      document.getElementById("csvFile").value = "";
+      document.getElementById("formTitle").textContent = "Add Partition";
+      document.getElementById("saveBtn").textContent = "Save Partition";
+      document.getElementById("cancelEditBtn").style.display = "none";
+      document.getElementById("successMsg").style.display = "none";
+      document.getElementById("errorMsg").style.display = "none";
+    }
+
+    async function loadStats() {
+      try {
+        const response = await fetch("http://localhost:3000/api/stats", {
+          credentials: "include"
+        });
+        const data = await response.json();
+
+        document.getElementById("totalPartitions").textContent = data.totalPartitions;
+        document.getElementById("totalCsvFiles").textContent = data.totalCsvFiles;
+        document.getElementById("lastAddedPartition").textContent = data.lastAddedPartition;
+        document.getElementById("lastUpdatedPartition").textContent = data.lastUpdatedPartition;
+      } catch (error) {}
+    }
+
+    async function loadLogs() {
+      const logsList = document.getElementById("logsList");
+
+      try {
+        const response = await fetch("http://localhost:3000/api/logs", {
+          credentials: "include"
+        });
+        const logs = await response.json();
+
+        logsList.innerHTML = "";
+
+        if (!logs.length) {
+          logsList.innerHTML = '<div class="empty">No activity logs yet.</div>';
+          return;
+        }
+
+        logs.forEach(log => {
+          const item = document.createElement("div");
+          item.className = "log-item";
+          item.innerHTML = `
+            <div><strong>${log.actionType}</strong> - ${log.actionDescription}</div>
+            <div class="log-time">${new Date(log.timestamp).toLocaleString()}</div>
+          `;
+          logsList.appendChild(item);
+        });
+      } catch (error) {
+        logsList.innerHTML = '<div class="empty">Failed to load logs.</div>';
+      }
     }
 
     async function loadPartitions() {
+      const list = document.getElementById("partitionsList");
+      const search = document.getElementById("searchInput").value.trim();
+      const sort = document.getElementById("sortSelect").value;
+
       try {
-        console.log("loading partitions...");
-        const res = await fetch("http://localhost:3000/api/partitions");
-        const data = await res.json();
-        partitions = data;
-        renderTable();
+        const url = new URL("http://localhost:3000/api/partitions");
+        if (search) url.searchParams.append("search", search);
+        if (sort) url.searchParams.append("sort", sort);
+
+        const response = await fetch(url, {
+          credentials: "include"
+        });
+
+        if (response.status === 401) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        const data = await response.json();
+        list.innerHTML = "";
+
+        if (!data.length) {
+          list.innerHTML = '<div class="empty">No partitions found.</div>';
+          return;
+        }
+
+        data.forEach(partition => {
+          const item = document.createElement("div");
+          item.className = "partition-item";
+          item.innerHTML = `
+            <div class="partition-top">
+              <div>
+                <div class="partition-title">${partition.title}</div>
+                <div class="partition-meta">
+                  <div><strong>File:</strong> ${partition.originalFileName}</div>
+                  <div><strong>Created:</strong> ${new Date(partition.createdAt).toLocaleString()}</div>
+                  <div><strong>Updated:</strong> ${new Date(partition.updatedAt).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="edit-btn" onclick='startEdit(${JSON.stringify(partition)})'>Edit</button>
+              <button class="preview-btn" onclick="previewCsv(${partition.id})">Preview</button>
+              <a class="download-btn" href="http://localhost:3000/api/partitions/${partition.id}/download" target="_blank">Download CSV</a>
+              <button class="delete-btn" onclick="deletePartition(${partition.id}, '${partition.title.replace(/'/g, "\\'")}')">Delete</button>
+            </div>
+          `;
+          list.appendChild(item);
+        });
       } catch (error) {
-        console.error("LOAD ERROR:", error);
-        showError("Cannot load partitions from server");
+        list.innerHTML = '<div class="empty">Failed to load partitions.</div>';
       }
     }
 
+    function startEdit(partition) {
+      document.getElementById("editId").value = partition.id;
+      document.getElementById("title").value = partition.title;
+      document.getElementById("csvFile").value = "";
+      document.getElementById("formTitle").textContent = "Edit Partition";
+      document.getElementById("saveBtn").textContent = "Update Partition";
+      document.getElementById("cancelEditBtn").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     async function savePartition() {
-      console.log("savePartition started");
-
+      const editId = document.getElementById("editId").value;
       const title = document.getElementById("title").value.trim();
-      const fileInput = document.getElementById("csvFile");
-      const file = fileInput.files[0];
+      const file = document.getElementById("csvFile").files[0];
 
-      console.log("title =", title);
-      console.log("file =", file);
-
-      if (title === "") {
-        showError("Partition title is required.");
+      if (!title) {
+        showMessage("error", "Partition title is required");
         return;
       }
 
-      if (!file) {
-        showError("Please upload a CSV file.");
+      if (!editId && !file) {
+        showMessage("error", "CSV file is required");
         return;
       }
 
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("csvFile", file);
+      if (file) {
+        formData.append("csvFile", file);
+      }
 
       try {
-        console.log("sending POST request...");
-        const res = await fetch("http://localhost:3000/api/partitions", {
-          method: "POST",
+        const url = editId
+          ? `http://localhost:3000/api/partitions/${editId}`
+          : "http://localhost:3000/api/partitions";
+
+        const method = editId ? "PUT" : "POST";
+
+        const response = await fetch(url, {
+          method,
+          credentials: "include",
           body: formData
         });
 
-        console.log("response received", res.status);
+        const data = await response.json();
 
-        const data = await res.json();
-        console.log("server data =", data);
-
-        if (!res.ok) {
-          showError(data.message || "Failed to add partition.");
-          return;
+        if (response.ok) {
+          showMessage("success", data.message);
+          resetForm();
+          await loadPartitions();
+          await loadStats();
+          await loadLogs();
+        } else {
+          showMessage("error", data.message || "Operation failed");
         }
-
-        document.getElementById("title").value = "";
-        fileInput.value = "";
-        showSuccess(data.message || "Partition added successfully.");
-        loadPartitions();
       } catch (error) {
-        console.error("SAVE ERROR:", error);
-        showError("Cannot connect to server.");
+        showMessage("error", "Cannot connect to server");
       }
     }
 
-    async function deletePartition(id) {
+    async function deletePartition(id, title) {
+      const confirmed = confirm(`Are you sure you want to delete "${title}"?`);
+      if (!confirmed) return;
+
       try {
-        const res = await fetch(`http://localhost:3000/api/partitions/${id}`, {
-          method: "DELETE"
+        const response = await fetch(`http://localhost:3000/api/partitions/${id}`, {
+          method: "DELETE",
+          credentials: "include"
         });
 
-        const data = await res.json();
+        const data = await response.json();
 
-        if (!res.ok) {
-          showError(data.message || "Failed to delete partition.");
+        if (response.ok) {
+          showMessage("success", data.message);
+          await loadPartitions();
+          await loadStats();
+          await loadLogs();
+        } else {
+          showMessage("error", data.message || "Delete failed");
+        }
+      } catch (error) {
+        showMessage("error", "Cannot connect to server");
+      }
+    }
+
+    async function previewCsv(id) {
+      const previewContent = document.getElementById("previewContent");
+      const modal = document.getElementById("previewModal");
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/partitions/${id}/preview`, {
+          credentials: "include"
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          previewContent.innerHTML = `<div class="empty">${data.message || "Preview failed"}</div>`;
+          modal.style.display = "flex";
           return;
         }
 
-        showSuccess(data.message || "Deleted successfully.");
-        loadPartitions();
+        if (!data.headers.length) {
+          previewContent.innerHTML = `<div class="empty">No preview data available.</div>`;
+          modal.style.display = "flex";
+          return;
+        }
+
+        let html = "<table><thead><tr>";
+        data.headers.forEach(header => {
+          html += `<th>${header}</th>`;
+        });
+        html += "</tr></thead><tbody>";
+
+        data.rows.forEach(row => {
+          html += "<tr>";
+          data.headers.forEach((_, index) => {
+            html += `<td>${row[index] || ""}</td>`;
+          });
+          html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+
+        previewContent.innerHTML = html;
+        modal.style.display = "flex";
       } catch (error) {
-        console.error("DELETE ERROR:", error);
-        showError("Cannot connect to server.");
+        previewContent.innerHTML = `<div class="empty">Cannot connect to server.</div>`;
+        modal.style.display = "flex";
       }
     }
 
-    function renderTable() {
-      const tableBody = document.getElementById("tableBody");
-      tableBody.innerHTML = "";
+    function closePreviewModal() {
+      document.getElementById("previewModal").style.display = "none";
+    }
 
-      for (let i = 0; i < partitions.length; i++) {
-        tableBody.innerHTML += `
-          <tr>
-            <td>${partitions[i].id}</td>
-            <td>${partitions[i].title}</td>
-            <td>${partitions[i].fileName}</td>
-            <td>
-              <button class="delete-btn" onclick="deletePartition(${partitions[i].id})">Delete</button>
-            </td>
-          </tr>
-        `;
+    function openPasswordModal() {
+      document.getElementById("passwordModal").style.display = "flex";
+      document.getElementById("passwordSuccessMsg").style.display = "none";
+      document.getElementById("passwordErrorMsg").style.display = "none";
+      document.getElementById("currentPassword").value = "";
+      document.getElementById("newPassword").value = "";
+    }
+
+    function closePasswordModal() {
+      document.getElementById("passwordModal").style.display = "none";
+    }
+
+    async function changePassword() {
+      const currentPassword = document.getElementById("currentPassword").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+      const successMsg = document.getElementById("passwordSuccessMsg");
+      const errorMsg = document.getElementById("passwordErrorMsg");
+
+      successMsg.style.display = "none";
+      errorMsg.style.display = "none";
+
+      try {
+        const response = await fetch("http://localhost:3000/api/change-password", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          successMsg.textContent = data.message;
+          successMsg.style.display = "block";
+        } else {
+          errorMsg.textContent = data.message || "Password change failed";
+          errorMsg.style.display = "block";
+        }
+      } catch (error) {
+        errorMsg.textContent = "Cannot connect to server";
+        errorMsg.style.display = "block";
       }
     }
 
-    document.getElementById("saveBtn").addEventListener("click", savePartition);
-    document.getElementById("logoutBtn").addEventListener("click", logout);
+    async function logout() {
+      try {
+        await fetch("http://localhost:3000/api/logout", {
+          method: "POST",
+          credentials: "include"
+        });
+      } catch (error) {}
 
-    loadPartitions();
+      window.location.href = "login.html";
+    }
+
+    window.onclick = function (event) {
+      const previewModal = document.getElementById("previewModal");
+      const passwordModal = document.getElementById("passwordModal");
+
+      if (event.target === previewModal) {
+        closePreviewModal();
+      }
+
+      if (event.target === passwordModal) {
+        closePasswordModal();
+      }
+    };
+
+    async function init() {
+      await checkSession();
+      await loadStats();
+      await loadPartitions();
+      await loadLogs();
+    }
+
+    init();
   </script>
 </body>
 </html>
