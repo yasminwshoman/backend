@@ -33,7 +33,7 @@
       color: #0f172a;
       margin-bottom: 24px;
     }
-
+ 
     input, button {
       width: 100%;
       padding: 13px;
@@ -108,7 +108,7 @@
       }
 
       try {
-        const response = await fetch("http://localhost:3000/api/login", {
+        const response = await fetch("http://127.0.0.1:3000/api/login", {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -121,7 +121,8 @@
         const data = await response.json();
 
         if (response.ok) {
-          window.location.href = "dashboard.html";
+           window.location.replace("dashboard.html"); 
+
         } else {
           errorMsg.textContent = data.message || "Login failed";
           errorMsg.style.display = "block";
