@@ -9,8 +9,8 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors({
-  origin: true,
-  credentials: true
+    origin: 'http://127.0.0.1:5500', // Change this to your EXACT frontend URL/Port
+    credentials: true
 }));
 
 app.use(express.json());
@@ -23,6 +23,7 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60
   }
 }));
@@ -157,10 +158,8 @@ app.post("/api/login", (req, res) => {
       admin: {
         username: admin.username,
         email: admin.email
-      }
-    });
-  }
-
+      } 
+    });}
   return res.status(401).json({ message: "Invalid username/email or password" });
 });
 

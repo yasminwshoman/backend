@@ -399,16 +399,19 @@
   <script>
     async function checkSession() {
       try {
-        const response = await fetch("http://localhost:3000/api/session", {
+        const response = await fetch("http://127.0.0.1:3000/api/session", {
           credentials: "include"
         });
         const data = await response.json();
 
-        if (!data.isLoggedIn) {
-          window.location.href = "login.html";
-        }
+    if (!data.isLoggedIn) {
+      window.location.replace("login.html");
+      return false; 
+    }
+    return true;
       } catch (error) {
-        window.location.href = "login.html";
+        window.location.replace("login.html");
+        return false;
       }
     }
 
@@ -443,7 +446,7 @@
 
     async function loadStats() {
       try {
-        const response = await fetch("http://localhost:3000/api/stats", {
+        const response = await fetch("http://127.0.0.1:3000/api/stats", {
           credentials: "include"
         });
         const data = await response.json();
@@ -459,7 +462,7 @@
       const logsList = document.getElementById("logsList");
 
       try {
-        const response = await fetch("http://localhost:3000/api/logs", {
+        const response = await fetch("http://127.0.0.1:3000/api/logs", {
           credentials: "include"
         });
         const logs = await response.json();
@@ -491,7 +494,7 @@
       const sort = document.getElementById("sortSelect").value;
 
       try {
-        const url = new URL("http://localhost:3000/api/partitions");
+        const url = new URL("http://127.0.0.1:3000/api/partitions");
         if (search) url.searchParams.append("search", search);
         if (sort) url.searchParams.append("sort", sort);
 
@@ -530,7 +533,7 @@
             <div class="actions">
               <button class="edit-btn" onclick='startEdit(${JSON.stringify(partition)})'>Edit</button>
               <button class="preview-btn" onclick="previewCsv(${partition.id})">Preview</button>
-              <a class="download-btn" href="http://localhost:3000/api/partitions/${partition.id}/download" target="_blank">Download CSV</a>
+              <a class="download-btn" href="http://127.0.0.1:3000/api/partitions/${partition.id}/download" target="_blank">Download CSV</a>
               <button class="delete-btn" onclick="deletePartition(${partition.id}, '${partition.title.replace(/'/g, "\\'")}')">Delete</button>
             </div>
           `;
@@ -574,8 +577,8 @@
 
       try {
         const url = editId
-          ? `http://localhost:3000/api/partitions/${editId}`
-          : "http://localhost:3000/api/partitions";
+          ? `http://127.0.0.1:3000/api/partitions/${editId}`
+          : "http://127.0.0.1:3000/api/partitions";
 
         const method = editId ? "PUT" : "POST";
 
@@ -606,7 +609,7 @@
       if (!confirmed) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/api/partitions/${id}`, {
+        const response = await fetch(`http://127.0.0.1:3000/api/partitions/${id}`, {
           method: "DELETE",
           credentials: "include"
         });
@@ -631,7 +634,7 @@
       const modal = document.getElementById("previewModal");
 
       try {
-        const response = await fetch(`http://localhost:3000/api/partitions/${id}/preview`, {
+        const response = await fetch(`http://127.0.0.1:3000/api/partitions/${id}/preview`, {
           credentials: "include"
         });
         const data = await response.json();
@@ -698,7 +701,7 @@
       errorMsg.style.display = "none";
 
       try {
-        const response = await fetch("http://localhost:3000/api/change-password", {
+        const response = await fetch("http://127.0.0.1:3000/api/change-password", {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -722,13 +725,15 @@
 
     async function logout() {
       try {
-        await fetch("http://localhost:3000/api/logout", {
+        await fetch("http://127.0.0.1:3000/api/logout", {
           method: "POST",
           credentials: "include"
         });
-      } catch (error) {}
+      } catch (error) {
+        console.error("Logout fetch failed", error);
+      }
 
-      window.location.href = "login.html";
+      window.location.replace("login.html");
     }
 
     window.onclick = function (event) {
@@ -744,12 +749,19 @@
       }
     };
 
-    async function init() {
-      await checkSession();
-      await loadStats();
-      await loadPartitions();
-      await loadLogs();
-    }
+async function init() {
+  // Wait for the session check to finish before doing anything else
+  const authorized = await checkSession();
+  
+  if (authorized) {
+    // Only load data if we are actually logged in
+    await Promise.all([
+      loadStats(),
+      loadPartitions(),
+      loadLogs()
+    ]);
+  }
+}
 
     init();
   </script>
